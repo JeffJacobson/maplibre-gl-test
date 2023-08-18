@@ -1,5 +1,5 @@
-import { Map as MapLibreMap, LngLatBounds } from "maplibre-gl";
-import { RouteLocator } from "wsdot-elc";
+import { Map as MapLibreMap, LngLatBounds, NavigationControl } from "maplibre-gl";
+import { callElc } from "./elc";
 import("./style.css");
 
 const waExtent = new LngLatBounds([-116.91, 45.54, -124.79, 49.05]);
@@ -21,6 +21,18 @@ const map = new MapLibreMap({
   ],
 });
 
+// Add zoom and rotation controls to the map.
+map.addControl(new NavigationControl({
+  showCompass: true,
+  showZoom: true,
+  visualizePitch: true
+}));
+
+
+map.on("styleimagemissing", (ev) => {
+  console.warn("style image missing", ev);
+})
+
 map.on("load", (ev) => {
   const currentBounds = ev.target.getBounds();
   console.log("current bounds", currentBounds.toArray());
@@ -30,18 +42,11 @@ map.on("load", (ev) => {
 
     console.debug(`You clicked ${x},${y}!`);
 
-    const routeLocator = new RouteLocator();
-    routeLocator
-      .findNearestRouteLocations({
-        coordinates: [x, y],
-        inSR: 4326,
-        searchRadius: 300,
-        referenceDate: new Date(),
-      })
-      .then((result) => {
-        console.log("ELC result", result);
-      }, reason => {
-        console.error(reason);
-      });
+    callElc(e.lngLat).then(
+      (elcResult) => {
+        console.log("elc result", elcResult);
+      },
+      (reason) => console.error("elc error", reason)
+    );
   });
 });
