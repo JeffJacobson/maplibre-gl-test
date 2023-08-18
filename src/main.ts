@@ -1,5 +1,11 @@
-import { Map as MapLibreMap, LngLatBounds, NavigationControl } from "maplibre-gl";
+import {
+  GeolocateControl,
+  Map as MapLibreMap,
+  LngLatBounds,
+  NavigationControl,
+} from "maplibre-gl";
 import { callElc } from "./elc";
+import { getLayerIdUrls } from "./lrs"
 import("./style.css");
 
 const waExtent = new LngLatBounds([-116.91, 45.54, -124.79, 49.05]);
@@ -22,20 +28,57 @@ const map = new MapLibreMap({
 });
 
 // Add zoom and rotation controls to the map.
-map.addControl(new NavigationControl({
-  showCompass: true,
-  showZoom: true,
-  visualizePitch: true
-}));
+map.addControl(
+  new NavigationControl({
+    showCompass: true,
+    showZoom: true,
+    visualizePitch: true,
+  })
+);
+
+// Add geolocate control to the map.
+map.addControl(
+  new GeolocateControl({
+    positionOptions: {
+      enableHighAccuracy: true,
+    },
+    trackUserLocation: true,
+  })
+);
+
+/**
+ * Adds layers to the map.
+ */
+function addLayers() {
+  for (const [name, url] of getLayerIdUrls()) {
+    map.addSource(name, {
+      type: "geojson",
+      data: url.toString()
+    });
+
+    map.addLayer({
+      id: `${name}-line`,
+      type: "line",
+      source: name,
+
+      paint: {
+        "line-color": "red",
+        "line-width": 10
+      }
+    })
+  }
+}
 
 
-map.on("styleimagemissing", (ev) => {
-  console.warn("style image missing", ev);
-})
+// map.on("styleimagemissing", (ev) => {
+//   console.warn("style image missing", ev);
+// });
 
-map.on("load", (ev) => {
+void map.once("load", (ev) => {
   const currentBounds = ev.target.getBounds();
   console.log("current bounds", currentBounds.toArray());
+
+  addLayers();
 
   map.on("click", (e) => {
     const { lng: x, lat: y } = e.lngLat;
@@ -50,3 +93,4 @@ map.on("load", (ev) => {
     );
   });
 });
+
