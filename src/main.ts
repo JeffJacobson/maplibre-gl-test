@@ -5,7 +5,7 @@ import {
   NavigationControl,
 } from "maplibre-gl";
 import { callElc } from "./elc";
-import { getLayerIdUrls } from "./lrs"
+import { getLayerIdUrls } from "./lrs";
 import("./style.css");
 
 const waExtent = new LngLatBounds([-116.91, 45.54, -124.79, 49.05]);
@@ -33,7 +33,7 @@ map.addControl(
     showCompass: true,
     showZoom: true,
     visualizePitch: true,
-  })
+  }),
 );
 
 // Add geolocate control to the map.
@@ -43,7 +43,7 @@ map.addControl(
       enableHighAccuracy: true,
     },
     trackUserLocation: true,
-  })
+  }),
 );
 
 /**
@@ -53,7 +53,7 @@ function addLayers() {
   for (const [name, url] of getLayerIdUrls()) {
     map.addSource(name, {
       type: "geojson",
-      data: url.toString()
+      data: url.toString(),
     });
 
     map.addLayer({
@@ -63,12 +63,11 @@ function addLayers() {
 
       paint: {
         "line-color": "red",
-        "line-width": 10
-      }
-    })
+        "line-width": 10,
+      },
+    });
   }
 }
-
 
 // map.on("styleimagemissing", (ev) => {
 //   console.warn("style image missing", ev);
@@ -89,8 +88,7 @@ void map.once("load", (ev) => {
       (elcResult) => {
         console.log("elc result", elcResult);
       },
-      (reason) => console.error("elc error", reason)
+      (reason) => console.error("elc error", reason),
     );
   });
 });
-

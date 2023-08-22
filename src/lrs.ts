@@ -1,5 +1,5 @@
 export const lrsFeatureServiceUrl = new URL(
-  "https://data.wsdot.wa.gov/arcgis/rest/services/Shared/LRSData/FeatureServer/"
+  "https://data.wsdot.wa.gov/arcgis/rest/services/Shared/LRSData/FeatureServer/",
 );
 
 /**

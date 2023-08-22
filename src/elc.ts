@@ -4,7 +4,7 @@ import { RouteLocator } from "wsdot-elc";
 /**
  * Calls the ELC to get the nearest route to where the user clicked.
  * @param lngLat - The coordinates the user clicked.
- * @returns - 
+ * @returns - A promise returning an array of route location objects.
  */
 export async function callElc(lngLat: LngLatLike) {
   const xy: [number, number] = extractXY(lngLat);
