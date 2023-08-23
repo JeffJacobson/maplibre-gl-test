@@ -1,22 +1,26 @@
 import {
   GeolocateControl,
   Map as MapLibreMap,
+  Marker,
   LngLatBounds,
   NavigationControl,
 } from "maplibre-gl";
-import { callElc } from "./elc";
+import { callElc, isPoint } from "./elc";
 import { getLayerIdUrls } from "./lrs";
+import { RouteLocation } from "wsdot-elc";
 import("./style.css");
 
 const waExtent = new LngLatBounds([-116.91, 45.54, -124.79, 49.05]);
 const apiKey =
   "AAPKb42425df90804cb8889dc45c730c0560bXhJA9Cv77sUza9LrzZg9GmC9q4wE41_qYQUO2LtsR7c2UVmMUSFxCqn-btyr7in";
 
+const basemapEnum = "imagery";
+
 const map = new MapLibreMap({
   // container id
   container: "map",
   // style URL
-  style: `https://basemapstyles-api.arcgis.com/arcgis/rest/services/styles/v2/styles/arcgis/imagery?token=${apiKey}`,
+  style: `https://basemapstyles-api.arcgis.com/arcgis/rest/services/styles/v2/styles/arcgis/${basemapEnum}?token=${apiKey}`,
   locale: "en-US",
   bounds: waExtent,
   hash: true,
@@ -33,7 +37,7 @@ map.addControl(
     showCompass: true,
     showZoom: true,
     visualizePitch: true,
-  }),
+  })
 );
 
 // Add geolocate control to the map.
@@ -43,7 +47,7 @@ map.addControl(
       enableHighAccuracy: true,
     },
     trackUserLocation: true,
-  }),
+  })
 );
 
 /**
@@ -73,6 +77,27 @@ function addLayers() {
 //   console.warn("style image missing", ev);
 // });
 
+
+/**
+ * Creates a marker representing a route location.
+ * @param routeLocation - A route location
+ * @returns - A marker
+ */
+function createMarker(routeLocation: RouteLocation) {
+  const g = routeLocation.RouteGeometry as unknown;
+  if (isPoint(g)) {
+    const element = document.createElement("div");
+    element.innerHTML = `<div>${routeLocation.Route}</div><div>${routeLocation.Srmp}${routeLocation.Back ? "B" : ""}</div>`;
+    const marker = new Marker({
+      className: "srmp-marker",
+      element
+    }).setLngLat([g.x, g.y]);
+    return marker;
+  }
+
+  return null;
+}
+
 void map.once("load", (ev) => {
   const currentBounds = ev.target.getBounds();
   console.log("current bounds", currentBounds.toArray());
@@ -80,15 +105,14 @@ void map.once("load", (ev) => {
   addLayers();
 
   map.on("click", (e) => {
-    const { lng: x, lat: y } = e.lngLat;
-
-    console.debug(`You clicked ${x},${y}!`);
-
     callElc(e.lngLat).then(
       (elcResult) => {
         console.log("elc result", elcResult);
+        elcResult.map(r => createMarker(r)?.addTo(map));
       },
-      (reason) => console.error("elc error", reason),
+      (reason) => {
+        console.error("elc error", reason);
+      }
     );
   });
 });
