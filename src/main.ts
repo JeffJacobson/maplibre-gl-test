@@ -1,3 +1,5 @@
+import "@fontsource/overpass";
+
 import {
   GeolocateControl,
   Map as MapLibreMap,
@@ -8,6 +10,8 @@ import {
 import { callElc, isPoint } from "./elc";
 import { getLayerIdUrls } from "./lrs";
 import { RouteLocation } from "wsdot-elc";
+import "./srmp-sign";
+import type SrmpSign from "./srmp-sign";
 import("./style.css");
 
 const waExtent = new LngLatBounds([-116.91, 45.54, -124.79, 49.05]);
@@ -77,7 +81,6 @@ function addLayers() {
 //   console.warn("style image missing", ev);
 // });
 
-
 /**
  * Creates a marker representing a route location.
  * @param routeLocation - A route location
@@ -86,13 +89,18 @@ function addLayers() {
 function createMarker(routeLocation: RouteLocation) {
   const g = routeLocation.RouteGeometry as unknown;
   if (isPoint(g)) {
-    const element = document.createElement("div");
-    element.innerHTML = `<div>${routeLocation.Route}</div><div>${routeLocation.Srmp}${routeLocation.Back ? "B" : ""}</div>`;
+    const element = document.createElement("srmp-sign");
+    element.setAttribute("route", routeLocation.Route ?? "");
+    element.setAttribute(
+      "srmp",
+      `${routeLocation.Srmp}${routeLocation.Back ? "B" : ""}`
+    );
+    // element.innerHTML = `<div>${routeLocation.Route}</div><div>${routeLocation.Srmp}${routeLocation.Back ? "B" : ""}</div>`;
     const marker = new Marker({
       className: "srmp-marker",
-      element
+      element,
     }).setLngLat([g.x, g.y]);
-    return marker;
+    return marker as Marker & { element: SrmpSign};
   }
 
   return null;
@@ -108,7 +116,7 @@ void map.once("load", (ev) => {
     callElc(e.lngLat).then(
       (elcResult) => {
         console.log("elc result", elcResult);
-        elcResult.map(r => createMarker(r)?.addTo(map));
+        elcResult.map((r) => createMarker(r)?.addTo(map));
       },
       (reason) => {
         console.error("elc error", reason);
