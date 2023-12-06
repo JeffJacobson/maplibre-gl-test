@@ -17,7 +17,7 @@
     "eslint-plugin-jsdoc": "^46.4.6",
     "prettier": "^3.0.1",
     "typescript": "^5.1.6",
-    "vite": "^4.4.9"
+    "vite": "^4.4.12"
   },
   "dependencies": {
     "maplibre-gl": "^3.3.0",
